@@ -1,17 +1,23 @@
 package io.github.harishb2k.spark.sql.parser;
 
-import io.github.harishb2k.spark.grammar.parser.SqlBaseParser.*;
+import io.github.harishb2k.spark.grammar.parser.SqlBaseParser.CreateTableHeaderContext;
+import io.github.harishb2k.spark.grammar.parser.SqlBaseParser.FromClauseContext;
+import io.github.harishb2k.spark.grammar.parser.SqlBaseParser.SingleStatementContext;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class NodeDefinition {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Data
+    @NoArgsConstructor
     public static class Node<T extends ParserRuleContext> {
         private T ctx;
         private Node parent;
@@ -51,5 +57,22 @@ public class NodeDefinition {
         public FromClause(FromClauseContext ctx) {
             super(ctx);
         }
+    }
+
+    @Data
+    public static class UnresolvedCreateTable extends Node<CreateTableHeaderContext> {
+        private String tableName;
+        private List<String> partitionFields = new ArrayList<>();
+        private Map<String, String> tableProperties = new HashMap<>();
+        private Map<String, String> options = new HashMap<>();
+        private Map<String, String> cols = new HashMap<>();
+
+        public UnresolvedCreateTable(CreateTableHeaderContext ctx) {
+            super(ctx);
+        }
+    }
+
+    public static class UnresolvedProjection extends Node {
+
     }
 }

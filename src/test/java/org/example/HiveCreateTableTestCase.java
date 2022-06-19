@@ -1,0 +1,37 @@
+package org.example;
+
+import io.github.harishb2k.spark.grammar.parser.SqlBaseLexer;
+import io.github.harishb2k.spark.grammar.parser.SqlBaseParser;
+import io.github.harishb2k.spark.sql.parser.SqlParseTreeListener;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.junit.Test;
+
+public class HiveCreateTableTestCase {
+
+    @Test
+    public void createHiveTable() {
+        String statement = "-- CREATE a HIVE SerDe table using the CREATE TABLE USING syntax.\n" +
+                "CREATE TABLE `my_table` (`name` STRING, `age` INT, `hair_color` STRING)\n" +
+                "  USING HIVE\n" +
+                "  OPTIONS(\n" +
+                "      INPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileInputFormat',\n" +
+                "      OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat',\n" +
+                "      SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe')\n" +
+                "  PARTITIONED BY (`hair_color`)\n" +
+                "  TBLPROPERTIES ('status'='staging', 'owner'='andrew');";
+
+        SqlBaseLexer lexer = new SqlBaseLexer(CharStreams.fromString(statement));
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        SqlBaseParser parser = new SqlBaseParser(tokens);
+
+
+        ParseTreeWalker walker = new ParseTreeWalker();
+        SqlParseTreeListener listener = new SqlParseTreeListener();
+        walker.walk(listener, parser.singleStatement());
+
+        System.out.println(listener.getRoot());
+        listener.getRoot().print(1);
+    }
+}
