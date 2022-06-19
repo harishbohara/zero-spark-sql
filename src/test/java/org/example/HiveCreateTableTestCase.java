@@ -2,6 +2,8 @@ package org.example;
 
 import io.github.harishb2k.spark.grammar.parser.SqlBaseLexer;
 import io.github.harishb2k.spark.grammar.parser.SqlBaseParser;
+import io.github.harishb2k.spark.sql.parser.NodeDefinition;
+import io.github.harishb2k.spark.sql.parser.NodeDefinition.Node;
 import io.github.harishb2k.spark.sql.parser.SqlParseTreeListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -33,5 +35,7 @@ public class HiveCreateTableTestCase {
 
         System.out.println(listener.getRoot());
         listener.getRoot().print(1);
+        Node root = listener.getRoot();
+        System.out.println();
     }
 }
