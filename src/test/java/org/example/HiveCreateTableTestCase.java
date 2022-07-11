@@ -2,7 +2,6 @@ package org.example;
 
 import io.github.harishb2k.spark.grammar.parser.SqlBaseLexer;
 import io.github.harishb2k.spark.grammar.parser.SqlBaseParser;
-import io.github.harishb2k.spark.sql.parser.NodeDefinition;
 import io.github.harishb2k.spark.sql.parser.NodeDefinition.Node;
 import io.github.harishb2k.spark.sql.parser.SqlParseTreeListener;
 import org.antlr.v4.runtime.CharStreams;
@@ -37,5 +36,30 @@ public class HiveCreateTableTestCase {
         listener.getRoot().print(1);
         Node root = listener.getRoot();
         System.out.println();
+
+        System.out.println(listener.getRoot().graph());
+    }
+
+    @Test
+    public void selectTest() {
+        String statement = """
+                 SELECT `id`, `name`, `created_at`
+                 FROM `main_table` INNER JOIN `other_table`
+                    ON `main_table`.`column_name_main` = `other_table`.`column_name_other`
+                 WHERE `id` > 10;
+                """;
+
+        var lexer = new SqlBaseLexer(CharStreams.fromString(statement));
+        var tokens = new CommonTokenStream(lexer);
+        var parser = new SqlBaseParser(tokens);
+        ParseTreeWalker walker = new ParseTreeWalker();
+        var listener = new io.github.harishb2k.spark.sql.parser.node.SqlParseTreeListener();
+        walker.walk(listener, parser.singleStatement());
+
+
+        var root = listener.getParentNode();
+        root.print(1);
+
+        // System.out.println(listener.getRoot().graph());
     }
 }
