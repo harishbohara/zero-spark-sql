@@ -32,6 +32,28 @@ public class SqlParseTreeListener extends SqlBaseParserBaseListener {
         commonExit();
     }
 
+    @Override
+    public void enterFromClause(SqlBaseParser.FromClauseContext ctx) {
+        FromClause t = new FromClause(ctx);
+        commonAddChildren(t);
+    }
+
+    @Override
+    public void exitFromClause(SqlBaseParser.FromClauseContext ctx) {
+        commonExit();
+    }
+
+    @Override
+    public void enterJoinRelation(SqlBaseParser.JoinRelationContext ctx) {
+        UnresolvedJoin t = new UnresolvedJoin(ctx);
+        commonAddChildren(t);
+    }
+
+    @Override
+    public void exitJoinRelation(SqlBaseParser.JoinRelationContext ctx) {
+        commonExit();
+    }
+
     private void commonAddChildren(Node<? extends ParserRuleContext> node) {
         internalRootNode.addChildren(node);
         internalRootNode = node;
