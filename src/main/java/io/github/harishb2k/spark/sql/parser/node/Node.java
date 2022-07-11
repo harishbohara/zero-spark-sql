@@ -50,6 +50,11 @@ public abstract class Node<T extends ParserRuleContext> {
         }
     }
 
+    @Override
+    public String toString() {
+        return describe(false);
+    }
+
     public void print(int depth) {
         char t = '\t';
 
@@ -57,15 +62,14 @@ public abstract class Node<T extends ParserRuleContext> {
         if (describe(false) != null) {
             s = describe(false);
         }
-
         if (depth == 1) {
             System.out.println(s);
         }
 
         for (Node n : children) {
-            s = n.ctx.start.getText();
+            s = n.describe(false);
             if (n.describe(false) != null) {
-                s = describe(false);
+                s = n.describe(false);
             }
             System.out.println(StringUtils.repeat(t, depth) + s);
             n.print(depth + 1);

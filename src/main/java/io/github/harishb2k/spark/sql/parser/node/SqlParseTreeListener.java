@@ -12,7 +12,7 @@ public class SqlParseTreeListener extends SqlBaseParserBaseListener {
 
     @Override
     public void enterSingleStatement(SqlBaseParser.SingleStatementContext ctx) {
-        SingleSelect t = new SingleSelect(ctx);
+        UnresolvedSingleSelect t = new UnresolvedSingleSelect(ctx);
         parentNode = internalRootNode = t;
     }
 
@@ -23,7 +23,7 @@ public class SqlParseTreeListener extends SqlBaseParserBaseListener {
 
     @Override
     public void enterSelectClause(SqlBaseParser.SelectClauseContext ctx) {
-        Projection t = new Projection(ctx);
+        UnresolvedProjection t = new UnresolvedProjection(ctx);
         commonAddChildren(t);
     }
 
