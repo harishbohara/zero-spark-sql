@@ -14,7 +14,9 @@ public class LogicalPlanOptimizer {
     }
 
     public Object optimize(Node node) {
-
+        for (LogicalRule rule : rules) {
+            rule.transform(node);
+        }
         return node;
     }
 }
