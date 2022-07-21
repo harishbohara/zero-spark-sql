@@ -50,6 +50,28 @@ public class SqlParseTreeListener extends SqlBaseParserBaseListener {
     }
 
     @Override
+    public void enterWhereClause(SqlBaseParser.WhereClauseContext ctx) {
+        UnresolvedWhere t = new UnresolvedWhere(ctx);
+        commonAddChildren(t);
+
+    }
+
+    @Override
+    public void exitWhereClause(SqlBaseParser.WhereClauseContext ctx) {
+        commonExit();
+    }
+
+    @Override
+    public void enterComparison(SqlBaseParser.ComparisonContext ctx) {
+        super.enterComparison(ctx);
+        if (internalRootNode instanceof UnresolvedWhere w) {
+            w.tableName = ((SqlBaseParser.DereferenceContext) ((SqlBaseParser.ValueExpressionDefaultContext) ctx.left).primaryExpression()).base.getText();
+            w.filedName = ((SqlBaseParser.DereferenceContext) ((SqlBaseParser.ValueExpressionDefaultContext) ctx.left).primaryExpression()).fieldName.getText();
+            w.operator = ctx.comparisonOperator().getText();
+        }
+    }
+
+    @Override
     public void exitJoinRelation(SqlBaseParser.JoinRelationContext ctx) {
         commonExit();
     }

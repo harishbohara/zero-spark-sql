@@ -15,7 +15,7 @@ public class HiveCreateTableTestCase {
                  SELECT `id`, `name`, `created_at`
                  FROM `main_table` INNER JOIN `other_table`
                     ON `main_table`.`column_name_main` = `other_table`.`column_name_other`
-                 WHERE `id` > 10;
+                 WHERE `main_table`.`id` > 10;
                 """;
 
         var lexer = new SqlBaseLexer(CharStreams.fromString(statement));

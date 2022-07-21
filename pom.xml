@@ -19,6 +19,16 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.scalified</groupId>
+            <artifactId>tree</artifactId>
+            <version>0.2.5</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.devlibx.easy</groupId>
+            <artifactId>helper</artifactId>
+            <version>0.0.76</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.12.0</version>
