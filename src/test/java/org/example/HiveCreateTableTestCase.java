@@ -2,7 +2,6 @@ package org.example;
 
 import io.github.harishb2k.spark.grammar.parser.SqlBaseLexer;
 import io.github.harishb2k.spark.grammar.parser.SqlBaseParser;
-import io.github.harishb2k.spark.sql.parser.logical.optimizer.LogicalPlanOptimizer;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -23,15 +22,15 @@ public class HiveCreateTableTestCase {
         var tokens = new CommonTokenStream(lexer);
         var parser = new SqlBaseParser(tokens);
         ParseTreeWalker walker = new ParseTreeWalker();
-        var listener = new io.github.harishb2k.spark.sql.parser.node.SqlParseTreeListener();
+        var listener = new io.github.harishb2k.spark.sql.parser.node.SqlParseTreeListenerExt();
         walker.walk(listener, parser.singleStatement());
 
 
-        var root = listener.getParentNode();
+        var root = listener.parentNode();
         root.print(1);
 
-        LogicalPlanOptimizer optimizer = new LogicalPlanOptimizer();
-        optimizer.optimize(root);
+        // LogicalPlanOptimizer optimizer = new LogicalPlanOptimizer();
+        // optimizer.optimize(root);
 
         // System.out.println(listener.getRoot().graph());
     }
