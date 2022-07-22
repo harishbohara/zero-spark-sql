@@ -15,3 +15,4 @@ public class WhereClausCollapseRule implements LogicalRule {
         return null;
     }
 }
+

@@ -11,7 +11,7 @@ public class LogicalPlanOptimizer {
 
     public LogicalPlanOptimizer() {
         this.rules = new ArrayList<>();
-        this.rules.add(new WhereClausCollapseRule());
+        this.rules.add(new WhereClauseCollapseRuleExt());
     }
 
     public Object optimize(Node node) {
