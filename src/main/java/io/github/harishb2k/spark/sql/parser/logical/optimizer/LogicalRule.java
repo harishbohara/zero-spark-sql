@@ -1,8 +1,7 @@
 package io.github.harishb2k.spark.sql.parser.logical.optimizer;
 
-import io.github.harishb2k.spark.sql.parser.node.Node;
+import io.github.harishb2k.spark.sql.parser.node.LogicalPlan;
 
 public interface LogicalRule {
-
-    Node transform(Node node);
+    LogicalPlan transform(LogicalPlan plan);
 }
