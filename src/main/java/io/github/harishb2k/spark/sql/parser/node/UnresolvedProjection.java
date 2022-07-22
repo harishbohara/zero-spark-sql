@@ -5,11 +5,10 @@ import io.github.harishb2k.spark.grammar.parser.SqlBaseParser;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UnresolvedProjection extends Node<SqlBaseParser.SelectClauseContext> {
+public class UnresolvedProjection extends Node {
     private final List<String> columns;
 
     public UnresolvedProjection(SqlBaseParser.SelectClauseContext ctx) {
-        super(ctx);
         columns = new ArrayList<>();
         for (SqlBaseParser.NamedExpressionContext n : ctx.namedExpressionSeq().namedExpression()) {
             columns.add(n.getText());

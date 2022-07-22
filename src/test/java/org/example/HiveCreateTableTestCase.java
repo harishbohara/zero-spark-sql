@@ -2,6 +2,7 @@ package org.example;
 
 import io.github.harishb2k.spark.grammar.parser.SqlBaseLexer;
 import io.github.harishb2k.spark.grammar.parser.SqlBaseParser;
+import io.github.harishb2k.spark.sql.parser.logical.optimizer.LogicalPlanOptimizer;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -28,6 +29,9 @@ public class HiveCreateTableTestCase {
 
         var root = listener.getParentNode();
         root.print(1);
+
+        LogicalPlanOptimizer optimizer = new LogicalPlanOptimizer();
+        optimizer.optimize(root);
 
         // System.out.println(listener.getRoot().graph());
     }

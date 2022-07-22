@@ -11,11 +11,15 @@ public class LogicalPlanOptimizer {
 
     public LogicalPlanOptimizer() {
         this.rules = new ArrayList<>();
+        this.rules.add(new WhereClausCollapseRule());
     }
 
     public Object optimize(Node node) {
         for (LogicalRule rule : rules) {
             rule.transform(node);
+        }
+        for (Node n : node.getChildren()) {
+            optimize(n);
         }
         return node;
     }

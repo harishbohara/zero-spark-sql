@@ -6,13 +6,12 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UnresolvedWhere extends Node<SqlBaseParser.WhereClauseContext> {
+public class UnresolvedWhere extends Node {
     public String tableName;
     public String filedName;
     public String operator;
 
     public UnresolvedWhere(SqlBaseParser.WhereClauseContext ctx) {
-        super(ctx);
     }
 
     @Override

@@ -2,7 +2,6 @@ package io.github.harishb2k.spark.sql.parser.node;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
@@ -11,28 +10,23 @@ import java.util.List;
 
 @Data
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
-public abstract class Node<T extends ParserRuleContext> {
-
-    /**
-     * Original ctx from SQL parser
-     */
-    private final T ctx;
+public abstract class Node {
 
     /**
      * Who is my parent
      */
-    private Node<? extends ParserRuleContext> parent;
+    private Node parent;
 
     /**
      * All children
      */
-    private final List<Node<? extends ParserRuleContext>> children = new ArrayList<>();
+    private final List<Node> children = new ArrayList<>();
 
 
     /**
      * Add a children to this node
      */
-    public void addChildren(Node<? extends ParserRuleContext> node) {
+    public void addChildren(Node node) {
         children.add(node);
         node.parent = this;
     }
@@ -58,7 +52,7 @@ public abstract class Node<T extends ParserRuleContext> {
     public void print(int depth) {
         char t = '\t';
 
-        String s = ctx.getText();
+        String s = "";
         if (describe(false) != null) {
             s = describe(false);
         }

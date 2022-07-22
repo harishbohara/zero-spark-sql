@@ -3,12 +3,11 @@ package io.github.harishb2k.spark.sql.parser.node;
 import io.github.harishb2k.spark.grammar.parser.SqlBaseParser;
 import io.github.harishb2k.spark.grammar.parser.SqlBaseParserBaseListener;
 import lombok.Getter;
-import org.antlr.v4.runtime.ParserRuleContext;
 
 public class SqlParseTreeListener extends SqlBaseParserBaseListener {
     @Getter
-    private Node<? extends ParserRuleContext> parentNode;
-    private Node<? extends ParserRuleContext> internalRootNode;
+    private Node parentNode;
+    private Node internalRootNode;
 
     @Override
     public void enterSingleStatement(SqlBaseParser.SingleStatementContext ctx) {
@@ -76,7 +75,7 @@ public class SqlParseTreeListener extends SqlBaseParserBaseListener {
         commonExit();
     }
 
-    private void commonAddChildren(Node<? extends ParserRuleContext> node) {
+    private void commonAddChildren(Node node) {
         internalRootNode.addChildren(node);
         internalRootNode = node;
     }
