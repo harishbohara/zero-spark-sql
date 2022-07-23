@@ -6,17 +6,15 @@ import java.util
 import scala.collection.JavaConversions._
 
 class LogicalPlanOptimizer {
-  val rules = new util.ArrayList[LogicalRule]
-  this.rules.add(new WhereClauseCollapseRule)
+
+  val rulesV1 = new util.ArrayList[Rule]
+  this.rulesV1.add(new WhereClauseCollapseRule)
 
 
   def optimize(logicalPlan: LogicalPlan): Any = {
-    for (rule <- rules) {
-      rule.transform(logicalPlan)
+    var lp = logicalPlan;
+    for (rule <- rulesV1) {
+      lp = rule.apply(lp)
     }
-    for (n <- logicalPlan.children) {
-      optimize(n)
-    }
-    logicalPlan
   }
 }

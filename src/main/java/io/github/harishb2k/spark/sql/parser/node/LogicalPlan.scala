@@ -20,6 +20,28 @@ abstract class LogicalPlan {
     logicalPlan.parent = this
   }
 
+  def transform(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
+
+    // Apply partial function on this plan
+    var afterRule = this
+    if (rule.isDefinedAt(this)) {
+      afterRule = rule.apply(this)
+    }
+
+    // Process children
+    if (afterRule == this) {
+      for (lp <- children) {
+        lp.transform(rule)
+      }
+    } else {
+      for (lp <- children) {
+        lp.transform(rule)
+      }
+    }
+
+    afterRule
+  }
+
   /** Describe this plan */
   def describe(verbose: Boolean): String = "LogicalPlan"
 
@@ -78,8 +100,13 @@ object UnresolvedProjection {
 }
 
 /** Unresolved where clause */
-class UnresolvedWhere extends LogicalPlan {
+case class UnresolvedWhere() extends LogicalPlan {
   override def describe(verbose: Boolean): String = "Where"
+}
+
+/** Unresolved where clause */
+case class ResolvedWhere(tableName: String, filedName: String, operator: String) extends LogicalPlan {
+  override def describe(verbose: Boolean): String = "ResolvedWhere: " + "table=" + tableName + " filed=" + filedName + " operator=" + operator
 }
 
 /** From  clause */
