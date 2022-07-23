@@ -59,11 +59,20 @@ class SqlParseTreeListenerExt extends SqlBaseParserBaseListener {
   // Called when we get a compare expression
   override def enterComparison(ctx: SqlBaseParser.ComparisonContext): Unit = {
     internalRootNode match {
-      case w: UnresolvedWhereExt =>
-        w.tableName = (ctx.left.asInstanceOf[SqlBaseParser.ValueExpressionDefaultContext]).primaryExpression.asInstanceOf[SqlBaseParser.DereferenceContext].base.getText
-        w.filedName = (ctx.left.asInstanceOf[SqlBaseParser.ValueExpressionDefaultContext]).primaryExpression.asInstanceOf[SqlBaseParser.DereferenceContext].fieldName.getText
-        w.operator = ctx.comparisonOperator.getText
+      case _: UnresolvedWhereExt =>
+        val tableName = (ctx.left.asInstanceOf[SqlBaseParser.ValueExpressionDefaultContext]).primaryExpression.asInstanceOf[SqlBaseParser.DereferenceContext].base.getText
+        val filedName = (ctx.left.asInstanceOf[SqlBaseParser.ValueExpressionDefaultContext]).primaryExpression.asInstanceOf[SqlBaseParser.DereferenceContext].fieldName.getText
+        val operator = ctx.comparisonOperator.getText
+        val t = UnresolvedComparison(tableName, filedName, operator)
+        commonAddChildren(t)
 
+      case _ =>
+    }
+  }
+
+  override def exitComparison(ctx: SqlBaseParser.ComparisonContext): Unit = {
+    internalRootNode.parent match {
+      case _: UnresolvedWhereExt => commonExit()
       case _ =>
     }
   }

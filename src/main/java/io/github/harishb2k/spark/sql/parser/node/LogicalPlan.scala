@@ -79,14 +79,15 @@ object UnresolvedProjectionExt {
 
 /** Unresolved where clause */
 class UnresolvedWhereExt extends LogicalPlan {
-  var tableName: String = _
-  var filedName: String = _
-  var operator: String = _
-
-  override def describe(verbose: Boolean): String = "Where: " + "table=" + tableName + " filed=" + filedName + " operator=" + operator
+  override def describe(verbose: Boolean): String = "Where"
 }
 
 /** From  clause */
 case class FromClauseExt() extends LogicalPlan {
   override def describe(verbose: Boolean) = "FromClause"
+}
+
+
+case class UnresolvedComparison(tableName: String, filedName: String, operator: String) extends LogicalPlan {
+  override def describe(verbose: Boolean): String = "Comparison: " + "table=" + tableName + " filed=" + filedName + " operator=" + operator
 }
