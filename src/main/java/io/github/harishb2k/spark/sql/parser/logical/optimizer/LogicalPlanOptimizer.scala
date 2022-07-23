@@ -7,7 +7,7 @@ import scala.collection.JavaConversions._
 
 class LogicalPlanOptimizer {
   val rules = new util.ArrayList[LogicalRule]
-  this.rules.add(new WhereClauseCollapseRuleExt)
+  this.rules.add(new WhereClauseCollapseRule)
 
 
   def optimize(logicalPlan: LogicalPlan): Any = {

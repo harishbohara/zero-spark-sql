@@ -44,50 +44,50 @@ abstract class LogicalPlan {
 
 
 /** This class is used to create a single select */
-case class UnresolvedSingleSelectExt() extends LogicalPlan {
+case class UnresolvedSingleSelect() extends LogicalPlan {
 }
 
 
 /** This class is used to create a join which is not resolved select */
-case class UnresolvedJoinExt(primaryRelationName: String, secondaryRelationName: String) extends LogicalPlan {
+case class UnresolvedJoin(primaryRelationName: String, secondaryRelationName: String) extends LogicalPlan {
   override def describe(verbose: Boolean): String = "UnresolvedJoin: PrimaryRelation=" + primaryRelationName + " SecondaryRelation=" + secondaryRelationName
 }
 
-object UnresolvedJoinExt {
-  def apply(ctx: SqlBaseParser.JoinRelationContext): UnresolvedJoinExt = {
+object UnresolvedJoin {
+  def apply(ctx: SqlBaseParser.JoinRelationContext): UnresolvedJoin = {
     val primaryRelationName = ctx.parent.asInstanceOf[SqlBaseParser.RelationContext].relationPrimary.getText
     val secondaryRelationName = ctx.right.parent.asInstanceOf[SqlBaseParser.JoinRelationContext].relationPrimary.getText
-    new UnresolvedJoinExt(primaryRelationName, secondaryRelationName)
+    new UnresolvedJoin(primaryRelationName, secondaryRelationName)
   }
 }
 
 
 /** This class is used to create unresolved select projection */
-case class UnresolvedProjectionExt(columns: util.ArrayList[String]) extends LogicalPlan {
+case class UnresolvedProjection(columns: util.ArrayList[String]) extends LogicalPlan {
   override def describe(verbose: Boolean): String = "UnresolvedProjection: " + String.join(",", columns)
 }
 
-object UnresolvedProjectionExt {
-  def apply(ctx: SqlBaseParser.SelectClauseContext): UnresolvedProjectionExt = {
+object UnresolvedProjection {
+  def apply(ctx: SqlBaseParser.SelectClauseContext): UnresolvedProjection = {
     val columns = new util.ArrayList[String]
     for (n <- ctx.namedExpressionSeq.namedExpression) {
       columns.add(n.getText)
     }
-    UnresolvedProjectionExt(columns)
+    UnresolvedProjection(columns)
   }
 }
 
 /** Unresolved where clause */
-class UnresolvedWhereExt extends LogicalPlan {
+class UnresolvedWhere extends LogicalPlan {
   override def describe(verbose: Boolean): String = "Where"
 }
 
 /** From  clause */
-case class FromClauseExt() extends LogicalPlan {
+case class FromClause() extends LogicalPlan {
   override def describe(verbose: Boolean) = "FromClause"
 }
 
-
+/** Capture comparison from where clause */
 case class UnresolvedComparison(tableName: String, filedName: String, operator: String) extends LogicalPlan {
   override def describe(verbose: Boolean): String = "Comparison: " + "table=" + tableName + " filed=" + filedName + " operator=" + operator
 }

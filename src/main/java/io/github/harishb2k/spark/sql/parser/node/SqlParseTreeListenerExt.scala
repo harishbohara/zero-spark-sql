@@ -8,7 +8,7 @@ class SqlParseTreeListenerExt extends SqlBaseParserBaseListener {
 
   // Called when we find a statement
   override def enterSingleStatement(ctx: SqlBaseParser.SingleStatementContext): Unit = {
-    val t = UnresolvedSingleSelectExt()
+    val t = UnresolvedSingleSelect()
     parentNode = t
     internalRootNode = t
   }
@@ -18,7 +18,7 @@ class SqlParseTreeListenerExt extends SqlBaseParserBaseListener {
 
   // Called when we get a select statement
   override def enterSelectClause(ctx: SqlBaseParser.SelectClauseContext): Unit = {
-    val t = UnresolvedProjectionExt(ctx)
+    val t = UnresolvedProjection(ctx)
     commonAddChildren(t)
   }
 
@@ -28,7 +28,7 @@ class SqlParseTreeListenerExt extends SqlBaseParserBaseListener {
 
   // Called when we get a from clause
   override def enterFromClause(ctx: SqlBaseParser.FromClauseContext): Unit = {
-    val t = FromClauseExt()
+    val t = FromClause()
     commonAddChildren(t)
   }
 
@@ -38,7 +38,7 @@ class SqlParseTreeListenerExt extends SqlBaseParserBaseListener {
 
   // Called when we get a join clause
   override def enterJoinRelation(ctx: SqlBaseParser.JoinRelationContext): Unit = {
-    val t = UnresolvedJoinExt(ctx)
+    val t = UnresolvedJoin(ctx)
     commonAddChildren(t)
   }
 
@@ -47,7 +47,7 @@ class SqlParseTreeListenerExt extends SqlBaseParserBaseListener {
 
   // Called when we get a where clause
   override def enterWhereClause(ctx: SqlBaseParser.WhereClauseContext): Unit = {
-    val t = new UnresolvedWhereExt()
+    val t = new UnresolvedWhere()
     commonAddChildren(t)
   }
 
@@ -59,7 +59,7 @@ class SqlParseTreeListenerExt extends SqlBaseParserBaseListener {
   // Called when we get a compare expression
   override def enterComparison(ctx: SqlBaseParser.ComparisonContext): Unit = {
     internalRootNode match {
-      case _: UnresolvedWhereExt =>
+      case _: UnresolvedWhere =>
         val tableName = (ctx.left.asInstanceOf[SqlBaseParser.ValueExpressionDefaultContext]).primaryExpression.asInstanceOf[SqlBaseParser.DereferenceContext].base.getText
         val filedName = (ctx.left.asInstanceOf[SqlBaseParser.ValueExpressionDefaultContext]).primaryExpression.asInstanceOf[SqlBaseParser.DereferenceContext].fieldName.getText
         val operator = ctx.comparisonOperator.getText
@@ -72,7 +72,7 @@ class SqlParseTreeListenerExt extends SqlBaseParserBaseListener {
 
   override def exitComparison(ctx: SqlBaseParser.ComparisonContext): Unit = {
     internalRootNode.parent match {
-      case _: UnresolvedWhereExt => commonExit()
+      case _: UnresolvedWhere => commonExit()
       case _ =>
     }
   }
