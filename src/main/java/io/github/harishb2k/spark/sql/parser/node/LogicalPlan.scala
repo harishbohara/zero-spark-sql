@@ -139,8 +139,12 @@ class FromClause(tableName: String) extends LogicalPlan {
 
 object FromClause {
   def unapply(f: FromClause): Option[(UnresolvedJoin, String)] = {
+    if (!f.isInstanceOf[FromClause]) {
+      return None
+    }
     if (f.children.isEmpty) {
-      None
+      val t = new UnresolvedJoin("", "")
+      Some(t, f.getTableName)
     } else {
       f.children(0) match {
         case j: UnresolvedJoin => Some(j, f.getTableName)

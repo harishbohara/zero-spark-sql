@@ -35,7 +35,11 @@ class WhereClauseCollapseRule extends Rule {
 
 class FromClauseRule extends Rule {
   override def apply(plan: LogicalPlan): LogicalPlan = plan transform {
-    case FromClause(unresolvedJoin: UnresolvedJoin, _: String) =>
+    case f@FromClause(unresolvedJoin: UnresolvedJoin, primaryRelationName: String) if unresolvedJoin.primaryRelationName == "" =>
+      val t = UnresolvedScan(primaryRelationName)
+      t
+
+    case FromClause(unresolvedJoin: UnresolvedJoin, primaryRelationName: String) if unresolvedJoin.primaryRelationName != "" =>
       val left = UnresolvedScan(unresolvedJoin.primaryRelationName)
       val right = UnresolvedScan(unresolvedJoin.secondaryRelationName)
       Join(left, right)

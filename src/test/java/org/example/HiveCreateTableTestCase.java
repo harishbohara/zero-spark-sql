@@ -19,7 +19,7 @@ public class HiveCreateTableTestCase {
                  WHERE `main_table`.`id` > 10;
                 """;
 
-      /*  statement = """
+      /* statement = """
                  SELECT `id`, `name`, `created_at`
                  FROM `main_table`
                  WHERE `main_table`.`id` > 10;
