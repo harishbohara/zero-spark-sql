@@ -30,8 +30,11 @@ abstract class LogicalPlan {
 
     // Process children
     if (afterRule == this) {
-      for (lp <- children) {
-        lp.transform(rule)
+      if (!children.isEmpty) {
+        for (i <- 0 until children.size()) {
+          val lp = children.get(i)
+          lp.transform(rule)
+        }
       }
     } else {
 
@@ -122,4 +125,21 @@ case class FromClause() extends LogicalPlan {
 /** Capture comparison from where clause */
 case class UnresolvedComparison(tableName: String, filedName: String, operator: String) extends LogicalPlan {
   override def describe(verbose: Boolean): String = "Comparison: " + "table=" + tableName + " filed=" + filedName + " operator=" + operator
+}
+
+case class UnresolvedScan(tableName: String) extends LogicalPlan {
+  override def describe(verbose: Boolean): String = "UnresolvedScan: " + "table=" + tableName
+}
+
+case class Join() extends LogicalPlan {
+  override def describe(verbose: Boolean): String = "Join"
+}
+
+object Join {
+  def apply(left: UnresolvedScan, right: UnresolvedScan): Join = {
+    val j = new Join
+    j.addChildren(left)
+    j.addChildren(right)
+    j
+  }
 }

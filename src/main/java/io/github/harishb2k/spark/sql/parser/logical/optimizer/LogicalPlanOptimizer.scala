@@ -9,6 +9,9 @@ class LogicalPlanOptimizer {
 
   val rulesV1 = new util.ArrayList[Rule]
   this.rulesV1.add(new WhereClauseCollapseRule)
+  this.rulesV1.add(new FromClauseRule)
+  this.rulesV1.add(new MergeScanWithWhereClause)
+
 
 
   def optimize(logicalPlan: LogicalPlan): Any = {
