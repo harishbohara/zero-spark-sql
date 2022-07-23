@@ -5,14 +5,19 @@ import io.github.harishb2k.spark.sql.parser.node._
 import java.util.Objects
 import scala.collection.JavaConversions._
 
-class Rules {
-}
-
-
-class WhereClauseCollapseRule extends Rule {
+// A rule which runs on LogicalPlan and does some transformation on the plan.
+abstract class Rule {
   /**
    * Apply a rule to logical plan
    */
+  def apply(plan: LogicalPlan): LogicalPlan
+}
+
+
+// This rule find a unresolved where clause and also looks for the comparison which is attached to that whare clause.
+// Final result will be a resolved where clause
+class WhereClauseCollapseRule extends Rule {
+
   override def apply(plan: LogicalPlan): LogicalPlan = plan transform {
     case w: UnresolvedWhere =>
 
