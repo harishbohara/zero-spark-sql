@@ -20,17 +20,16 @@ class WhereClauseCollapseRule extends Rule {
 
   override def apply(plan: LogicalPlan): LogicalPlan = plan transform {
     case w: UnresolvedWhere =>
-      var result = plan
 
       // If where clause has a child which is a comparison, then we will merge it with where clause
       for (lp <- w.children) {
-        result = lp match {
+        return lp match {
           case UnresolvedComparison(tableName, filedName, operator) => ResolvedWhere(tableName, filedName, operator)
-          case _ => null
+          case _ => plan
         }
       }
 
-      result
+      plan
   }
 }
 
