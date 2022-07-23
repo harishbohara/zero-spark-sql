@@ -51,12 +51,15 @@ class MergeScanWithWhereClause extends Rule {
    * Apply a rule to logical plan
    */
   override def apply(plan: LogicalPlan): LogicalPlan = plan transform {
+    case s: UnresolvedScan if s.parent.isInstanceOf[ResolvedWhere] =>
+      s
     case s: UnresolvedScan =>
       var ret: LogicalPlan = s
       for (i <- 0 until s.parent.parent.children.size()) {
         s.parent.parent.children.get(i) match {
           case where: ResolvedWhere if Objects.equals(where.tableName, s.tableName) =>
             ret = where
+            ret.addChildren(s)
           case _ =>
         }
       }

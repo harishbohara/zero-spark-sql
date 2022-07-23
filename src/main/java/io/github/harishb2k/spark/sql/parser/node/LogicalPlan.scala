@@ -22,6 +22,8 @@ abstract class LogicalPlan {
 
   def transform(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
 
+    val parent = this.parent
+
     // Apply partial function on this plan
     var afterRule = this
     if (rule.isDefinedAt(this)) {
@@ -39,8 +41,8 @@ abstract class LogicalPlan {
     } else {
 
       // If this is a new logical plan - after running the rule than replace it
-      this.parent.children.remove(this)
-      this.parent.addChildren(afterRule);
+      parent.children.remove(this)
+      parent.addChildren(afterRule);
 
       for (lp <- children) {
         lp.transform(rule)
