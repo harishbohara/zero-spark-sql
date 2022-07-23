@@ -133,15 +133,17 @@ case class ResolvedWhere(tableName: String, filedName: String, operator: String)
 /** From  clause */
 class FromClause(tableName: String) extends LogicalPlan {
   override def describe(verbose: Boolean): String = "FromClause: table=" + tableName
+
+  def getTableName: String = tableName
 }
 
 object FromClause {
-  def unapply(f: FromClause): Option[UnresolvedJoin] = {
+  def unapply(f: FromClause): Option[(UnresolvedJoin, String)] = {
     if (f.children.isEmpty) {
       None
     } else {
       f.children(0) match {
-        case j: UnresolvedJoin => Some(j)
+        case j: UnresolvedJoin => Some(j, f.getTableName)
         case _ => None
       }
     }
