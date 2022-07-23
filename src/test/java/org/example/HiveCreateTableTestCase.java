@@ -32,7 +32,7 @@ public class HiveCreateTableTestCase {
 
         System.out.println("\nAfter Optimize called \n");
         LogicalPlanOptimizer optimizer = new LogicalPlanOptimizer();
-        optimizer.optimize(root);
+        root = optimizer.optimize(root);
         root.print(1);
         // System.out.println(listener.getRoot().graph());
     }

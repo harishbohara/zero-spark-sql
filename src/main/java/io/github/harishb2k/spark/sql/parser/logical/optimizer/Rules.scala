@@ -67,3 +67,32 @@ class MergeScanWithWhereClause extends Rule {
       ret
   }
 }
+
+class MergeJoinAndProjection extends Rule {
+  /**
+   * Apply a rule to logical plan
+   */
+  override def apply(plan: LogicalPlan): LogicalPlan = plan transform {
+    case us@UnresolvedSingleSelect(p, j) if j != null =>
+      us
+
+    case us@UnresolvedSingleSelect(p, j) =>
+      for (n <- us.children) {
+            n match {
+              case _p: UnresolvedProjection => us.projection = _p
+              case _j: Join => us.join = _j
+              case _ =>
+            }
+      }
+
+      if (us.join == null || us.projection == null) {
+        return us
+      }
+
+      val newP = new UnresolvedProjection(us.projection.columns)
+      newP.addChildren(us.join)
+      val s = new UnresolvedSingleSelect
+      s.addChildren(newP)
+      s
+  }
+}

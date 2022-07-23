@@ -41,10 +41,13 @@ abstract class LogicalPlan {
     } else {
 
       // If this is a new logical plan - after running the rule than replace it
-      parent.children.remove(this)
-      parent.addChildren(afterRule);
+      if (parent != null) {
+        parent.children.remove(this)
+        parent.addChildren(afterRule);
+      }
 
-      for (lp <- children) {
+      for (i <- 0 until children.size()) {
+        val lp = children.get(i)
         lp.transform(rule)
       }
     }
@@ -76,7 +79,15 @@ abstract class LogicalPlan {
 
 
 /** This class is used to create a single select */
-case class UnresolvedSingleSelect() extends LogicalPlan {
+class UnresolvedSingleSelect extends LogicalPlan {
+  var projection: UnresolvedProjection = _
+  var join: Join = _
+}
+
+object UnresolvedSingleSelect {
+  def unapply(lp: UnresolvedSingleSelect): Option[(UnresolvedProjection, Join)] = {
+    Some(lp.projection, lp.join)
+  }
 }
 
 

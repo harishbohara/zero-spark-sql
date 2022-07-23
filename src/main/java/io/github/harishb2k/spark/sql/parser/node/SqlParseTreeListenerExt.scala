@@ -8,7 +8,7 @@ class SqlParseTreeListenerExt extends SqlBaseParserBaseListener {
 
   // Called when we find a statement
   override def enterSingleStatement(ctx: SqlBaseParser.SingleStatementContext): Unit = {
-    val t = UnresolvedSingleSelect()
+    val t = new UnresolvedSingleSelect
     parentNode = t
     internalRootNode = t
   }
