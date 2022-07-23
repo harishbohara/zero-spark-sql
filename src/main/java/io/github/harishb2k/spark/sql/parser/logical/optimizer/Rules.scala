@@ -24,8 +24,7 @@ class WhereClauseCollapseRule extends Rule {
       // If where clause has a child which is a comparison, then we will merge it with where clause
       for (lp <- w.children) {
         return lp match {
-          case c: UnresolvedComparison =>
-            return ResolvedWhere(c.tableName, c.filedName, c.operator)
+          case UnresolvedComparison(tableName, filedName, operator) => ResolvedWhere(tableName, filedName, operator)
           case _ => null
         }
       }
