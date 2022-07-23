@@ -30,6 +30,7 @@ public class HiveCreateTableTestCase {
         var root = listener.parentNode();
         root.print(1);
 
+        System.out.println("\nAfter Optimize called \n");
         LogicalPlanOptimizer optimizer = new LogicalPlanOptimizer();
         optimizer.optimize(root);
         root.print(1);

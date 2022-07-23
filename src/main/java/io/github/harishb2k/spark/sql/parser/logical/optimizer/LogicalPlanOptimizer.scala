@@ -14,7 +14,13 @@ class LogicalPlanOptimizer {
   def optimize(logicalPlan: LogicalPlan): Any = {
     var lp = logicalPlan;
     for (rule <- rulesV1) {
-      lp = rule.apply(lp)
+      val afterApply = rule.apply(lp)
+
+      if (afterApply == lp) {
+
+      } else {
+
+      }
     }
   }
 }

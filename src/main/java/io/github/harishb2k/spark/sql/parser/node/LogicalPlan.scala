@@ -34,6 +34,11 @@ abstract class LogicalPlan {
         lp.transform(rule)
       }
     } else {
+
+      // If this is a new logical plan - after running the rule than replace it
+      this.parent.children.remove(this)
+      this.parent.addChildren(afterRule);
+
       for (lp <- children) {
         lp.transform(rule)
       }
