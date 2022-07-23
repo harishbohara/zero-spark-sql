@@ -1,5 +1,6 @@
 package io.github.harishb2k.spark.sql.parser.node
 
+import io.github.harishb2k.spark.grammar.parser.SqlBaseParser.TableNameContext
 import io.github.harishb2k.spark.grammar.parser.{SqlBaseParser, SqlBaseParserBaseListener}
 
 class SqlParseTreeListenerExt extends SqlBaseParserBaseListener {
@@ -28,8 +29,13 @@ class SqlParseTreeListenerExt extends SqlBaseParserBaseListener {
 
   // Called when we get a from clause
   override def enterFromClause(ctx: SqlBaseParser.FromClauseContext): Unit = {
-    val t = FromClause()
+    val c = ctx.relation(0).relationPrimary().asInstanceOf[TableNameContext]
+    val t = FromClause(c.getText)
     commonAddChildren(t)
+  }
+
+  override def enterFromStatementBody(ctx: SqlBaseParser.FromStatementBodyContext): Unit = {
+    print(ctx)
   }
 
   // Called when we exit from a from clause

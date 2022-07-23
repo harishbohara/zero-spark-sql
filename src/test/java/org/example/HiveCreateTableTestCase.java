@@ -19,6 +19,12 @@ public class HiveCreateTableTestCase {
                  WHERE `main_table`.`id` > 10;
                 """;
 
+      /*  statement = """
+                 SELECT `id`, `name`, `created_at`
+                 FROM `main_table`
+                 WHERE `main_table`.`id` > 10;
+                """;*/
+
         var lexer = new SqlBaseLexer(CharStreams.fromString(statement));
         var tokens = new CommonTokenStream(lexer);
         var parser = new SqlBaseParser(tokens);
