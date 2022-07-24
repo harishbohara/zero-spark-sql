@@ -72,6 +72,7 @@ class SqlParseTreeListenerExt extends SqlBaseParserBaseListener {
         parserCtx.query.where.tableName = (ctx.left.asInstanceOf[SqlBaseParser.ValueExpressionDefaultContext]).primaryExpression.asInstanceOf[SqlBaseParser.DereferenceContext].base.getText
         parserCtx.query.where.filedName = (ctx.left.asInstanceOf[SqlBaseParser.ValueExpressionDefaultContext]).primaryExpression.asInstanceOf[SqlBaseParser.DereferenceContext].fieldName.getText
         parserCtx.query.where.operator = ctx.comparisonOperator.getText
+        parserCtx.query.where.tableName = parserCtx.query.where.tableName.replace("`", "")
       case _ =>
     }
   }

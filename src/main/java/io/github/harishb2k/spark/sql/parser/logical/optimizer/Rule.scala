@@ -2,6 +2,8 @@ package io.github.harishb2k.spark.sql.parser.logical.optimizer
 
 import io.github.harishb2k.spark.sql.parser.node._
 
+import java.util.Objects
+
 /**
  * A rule which runs on LogicalPlan and does some transformation on the plan.
  */
@@ -40,5 +42,42 @@ class UnresolvedFromClauseWithSingleTable extends Rule {
 
     case ufc@UnresolvedFromClause(_, simpleFromClause: Boolean) if !simpleFromClause =>
       ufc.internalChildren.get(0)
+  }
+}
+
+class PredicatePushDownUnresolvedScan extends Rule {
+  /**
+   * Apply a rule to logical plan
+   */
+  override def apply(plan: LogicalPlan): LogicalPlan = plan transform {
+    case UnresolvedScan(scanTableName) =>
+      var parent: LogicalPlan = plan
+      while (parent != null) {
+        parent = plan.parent
+      }
+      if (parent == null) {
+        return plan
+      }
+
+      // Find where clause with matching table name
+      val callback = new ITTraversal {
+        override def callback(plan: LogicalPlan): LogicalPlan = {
+          plan match {
+            case w@UnresolvedWhere(tableName, filedName, operator) if Objects.equals(tableName, scanTableName) =>
+              w
+            case _ => null
+          }
+        }
+      }
+      val where: LogicalPlan = parent.travers(callback)
+
+      if (where != null) {
+        // us.parent.removeChildren(us)
+        // where.addChildren(us)
+        // where
+      } else {
+        // us
+      }
+      plan
   }
 }

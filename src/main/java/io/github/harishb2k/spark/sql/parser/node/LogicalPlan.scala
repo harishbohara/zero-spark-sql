@@ -204,7 +204,7 @@ object UnresolvedSimpleJoin {
 }
 
 /** Unresolved where clause */
-class UnresolvedWhere(var tableName: String, var filedName: String, var operator: String) extends LogicalPlan {
+case class UnresolvedWhere(var tableName: String, var filedName: String, var operator: String) extends LogicalPlan {
   override def describe(verbose: Boolean): String = "UnresolvedWhere: " + "table=" + tableName + " filed=" + filedName + " operator=" + operator
 }
 

@@ -85,6 +85,7 @@ public class SelectQueryOptimizerTest {
         optimizer.rules().clear();
         optimizer.rules().add(new UnresolvedJoinRule());
         optimizer.rules().add(new UnresolvedFromClauseWithSingleTable());
+
         root = optimizer.optimize(root);
         root.print(1);
 
