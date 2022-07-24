@@ -8,11 +8,13 @@ import scala.collection.JavaConversions._
 
 abstract class LogicalPlan {
 
+  /**
+   * Parent of this plan
+   */
   var parent: LogicalPlan = _;
 
-  protected val internalChildren = new util.ArrayList[LogicalPlan]
 
-  def children(): util.ArrayList[LogicalPlan] = internalChildren
+  protected val internalChildren = new util.ArrayList[LogicalPlan]
 
   /**
    * Add a children to this node
@@ -20,41 +22,6 @@ abstract class LogicalPlan {
   def addChildren(logicalPlan: LogicalPlan): Unit = {
     internalChildren.add(logicalPlan)
     logicalPlan.parent = this
-  }
-
-  def transform(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
-
-    val parent = this.parent
-
-    // Apply partial function on this plan
-    var afterRule = this
-    if (rule.isDefinedAt(this)) {
-      afterRule = rule.apply(this)
-    }
-
-    // Process children
-    if (afterRule == this) {
-      if (!internalChildren.isEmpty) {
-        for (i <- 0 until internalChildren.size()) {
-          val lp = internalChildren.get(i)
-          lp.transform(rule)
-        }
-      }
-    } else {
-
-      // If this is a new logical plan - after running the rule than replace it
-      if (parent != null) {
-        parent.internalChildren.remove(this)
-        parent.addChildren(afterRule);
-      }
-
-      for (i <- 0 until internalChildren.size()) {
-        val lp = internalChildren.get(i)
-        lp.transform(rule)
-      }
-    }
-
-    afterRule
   }
 
   /** Describe this plan */
@@ -69,7 +36,7 @@ abstract class LogicalPlan {
     var s = ""
     if (describe(false) != null) s = describe(false)
     if (depth == 1) System.out.println(s)
-    import scala.collection.JavaConversions._
+
     for (n <- internalChildren) {
       s = n.describe(false)
       if (n.describe(false) != null) s = n.describe(false)
@@ -80,34 +47,22 @@ abstract class LogicalPlan {
 }
 
 
-/** This class is used to create a single select */
+/** This class is used to create a parent select - it holds the main part of a select statment
+ * Projection
+ * Where
+ * From
+ * Order By
+ * ...
+ * */
 class UnresolvedSingleSelect extends LogicalPlan {
   var projection: UnresolvedProjection = _
-  var join: Join = _
+  var from: UnresolvedFromClause = _
+  var where: UnresolvedWhere = _
+
+  override def describe(verbose: Boolean): String = "UnresolvedSingleSelect: "
 }
 
-object UnresolvedSingleSelect {
-  def unapply(lp: UnresolvedSingleSelect): Option[(UnresolvedProjection, Join)] = {
-    Some(lp.projection, lp.join)
-  }
-}
-
-
-/** This class is used to create a join which is not resolved select */
-case class UnresolvedJoin(primaryRelationName: String, secondaryRelationName: String) extends LogicalPlan {
-  override def describe(verbose: Boolean): String = "UnresolvedJoin: PrimaryRelation=" + primaryRelationName + " SecondaryRelation=" + secondaryRelationName
-}
-
-object UnresolvedJoin {
-  def apply(ctx: SqlBaseParser.JoinRelationContext): UnresolvedJoin = {
-    val primaryRelationName = ctx.parent.asInstanceOf[SqlBaseParser.RelationContext].relationPrimary.getText
-    val secondaryRelationName = ctx.right.parent.asInstanceOf[SqlBaseParser.JoinRelationContext].relationPrimary.getText
-    new UnresolvedJoin(primaryRelationName, secondaryRelationName)
-  }
-}
-
-
-/** This class is used to create unresolved select projection */
+/** Unresolved columns names (x, y, z) from "Select x, y, x FROM table */
 case class UnresolvedProjection(columns: util.ArrayList[String]) extends LogicalPlan {
   override def describe(verbose: Boolean): String = "UnresolvedProjection: " + String.join(",", columns)
 }
@@ -122,58 +77,26 @@ object UnresolvedProjection {
   }
 }
 
-/** Unresolved where clause */
-case class UnresolvedWhere() extends LogicalPlan {
-  override def describe(verbose: Boolean): String = "Where"
-}
-
-/** Unresolved where clause */
-case class ResolvedWhere(tableName: String, filedName: String, operator: String) extends LogicalPlan {
-  override def describe(verbose: Boolean): String = "ResolvedWhere: " + "table=" + tableName + " filed=" + filedName + " operator=" + operator
-}
-
 /** From  clause */
-class UnresolvedFromClause(tableName: String) extends LogicalPlan {
+class UnresolvedFromClause(val tableName: String) extends LogicalPlan {
   override def describe(verbose: Boolean): String = "UnresolvedFromClause: table=" + tableName
-
-  def getTableName: String = tableName
 }
 
-object UnresolvedFromClause {
-  def unapply(f: UnresolvedFromClause): Option[(UnresolvedJoin, String)] = {
-    if (!f.isInstanceOf[UnresolvedFromClause]) {
-      return None
-    }
-    if (f.internalChildren.isEmpty) {
-      val t = new UnresolvedJoin("", "")
-      Some(t, f.getTableName)
-    } else {
-      f.internalChildren(0) match {
-        case j: UnresolvedJoin => Some(j, f.getTableName)
-        case _ => None
-      }
-    }
+/** This class is used to create a join which is not resolved select */
+case class UnresolvedJoin(primaryRelationName: String, secondaryRelationName: String) extends LogicalPlan {
+  override def describe(verbose: Boolean): String = "UnresolvedJoin: PrimaryRelation=" + primaryRelationName + " SecondaryRelation=" + secondaryRelationName
+}
+
+object UnresolvedJoin {
+  def apply(ctx: SqlBaseParser.JoinRelationContext): UnresolvedJoin = {
+    val primaryRelationName = ctx.parent.asInstanceOf[SqlBaseParser.RelationContext].relationPrimary.getText
+    val secondaryRelationName = ctx.right.parent.asInstanceOf[SqlBaseParser.JoinRelationContext].relationPrimary.getText
+    new UnresolvedJoin(primaryRelationName, secondaryRelationName)
   }
 }
 
-/** Capture comparison from where clause */
-case class UnresolvedComparison(tableName: String, filedName: String, operator: String) extends LogicalPlan {
-  override def describe(verbose: Boolean): String = "Comparison: " + "table=" + tableName + " filed=" + filedName + " operator=" + operator
+/** Unresolved where clause */
+class UnresolvedWhere(var tableName: String, var filedName: String, var operator: String) extends LogicalPlan {
+  override def describe(verbose: Boolean): String = "UnresolvedWhere: " + "table=" + tableName + " filed=" + filedName + " operator=" + operator
 }
 
-case class UnresolvedScan(tableName: String) extends LogicalPlan {
-  override def describe(verbose: Boolean): String = "UnresolvedScan: " + "table=" + tableName
-}
-
-case class Join() extends LogicalPlan {
-  override def describe(verbose: Boolean): String = "Join"
-}
-
-object Join {
-  def apply(left: UnresolvedScan, right: UnresolvedScan): Join = {
-    val j = new Join
-    j.addChildren(left)
-    j.addChildren(right)
-    j
-  }
-}
