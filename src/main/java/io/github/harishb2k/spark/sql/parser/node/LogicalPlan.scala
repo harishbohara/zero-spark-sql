@@ -10,13 +10,15 @@ abstract class LogicalPlan {
 
   var parent: LogicalPlan = _;
 
-  val children = new util.ArrayList[LogicalPlan]
+  protected val internalChildren = new util.ArrayList[LogicalPlan]
+
+  def children(): util.ArrayList[LogicalPlan] = internalChildren
 
   /**
    * Add a children to this node
    */
   def addChildren(logicalPlan: LogicalPlan): Unit = {
-    children.add(logicalPlan)
+    internalChildren.add(logicalPlan)
     logicalPlan.parent = this
   }
 
@@ -32,9 +34,9 @@ abstract class LogicalPlan {
 
     // Process children
     if (afterRule == this) {
-      if (!children.isEmpty) {
-        for (i <- 0 until children.size()) {
-          val lp = children.get(i)
+      if (!internalChildren.isEmpty) {
+        for (i <- 0 until internalChildren.size()) {
+          val lp = internalChildren.get(i)
           lp.transform(rule)
         }
       }
@@ -42,12 +44,12 @@ abstract class LogicalPlan {
 
       // If this is a new logical plan - after running the rule than replace it
       if (parent != null) {
-        parent.children.remove(this)
+        parent.internalChildren.remove(this)
         parent.addChildren(afterRule);
       }
 
-      for (i <- 0 until children.size()) {
-        val lp = children.get(i)
+      for (i <- 0 until internalChildren.size()) {
+        val lp = internalChildren.get(i)
         lp.transform(rule)
       }
     }
@@ -68,7 +70,7 @@ abstract class LogicalPlan {
     if (describe(false) != null) s = describe(false)
     if (depth == 1) System.out.println(s)
     import scala.collection.JavaConversions._
-    for (n <- children) {
+    for (n <- internalChildren) {
       s = n.describe(false)
       if (n.describe(false) != null) s = n.describe(false)
       System.out.println(StringUtils.repeat(t, depth) + s)
@@ -142,11 +144,11 @@ object FromClause {
     if (!f.isInstanceOf[FromClause]) {
       return None
     }
-    if (f.children.isEmpty) {
+    if (f.internalChildren.isEmpty) {
       val t = new UnresolvedJoin("", "")
       Some(t, f.getTableName)
     } else {
-      f.children(0) match {
+      f.internalChildren(0) match {
         case j: UnresolvedJoin => Some(j, f.getTableName)
         case _ => None
       }

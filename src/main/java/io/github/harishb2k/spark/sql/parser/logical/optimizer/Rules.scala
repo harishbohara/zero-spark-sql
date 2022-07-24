@@ -22,7 +22,7 @@ class WhereClauseCollapseRule extends Rule {
     case w: UnresolvedWhere =>
 
       // If where clause has a child which is a comparison, then we will merge it with where clause
-      for (lp <- w.children) {
+      for (lp <- w.children()) {
         return lp match {
           case UnresolvedComparison(tableName, filedName, operator) => ResolvedWhere(tableName, filedName, operator)
           case _ => plan
@@ -55,15 +55,15 @@ class MergeScanWithWhereClause extends Rule {
       s
     case s: UnresolvedScan =>
       var ret: LogicalPlan = s
-      for (i <- 0 until s.parent.parent.children.size()) {
-        s.parent.parent.children.get(i) match {
+      for (i <- 0 until s.parent.parent.children().size()) {
+        s.parent.parent.children().get(i) match {
           case where: ResolvedWhere if Objects.equals(where.tableName, s.tableName) =>
             ret = where
             ret.addChildren(s)
           case _ =>
         }
       }
-      if (s != ret) s.parent.parent.children.remove(ret)
+      if (s != ret) s.parent.parent.children().remove(ret)
       ret
   }
 }
@@ -77,7 +77,7 @@ class MergeJoinAndProjection extends Rule {
       us
 
     case us@UnresolvedSingleSelect(p, j) =>
-      for (n <- us.children) {
+      for (n <- us.children()) {
             n match {
               case _p: UnresolvedProjection => us.projection = _p
               case _j: Join => us.join = _j
