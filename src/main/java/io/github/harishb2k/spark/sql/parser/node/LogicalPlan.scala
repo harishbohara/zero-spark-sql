@@ -16,7 +16,7 @@ abstract class LogicalPlan {
    */
   var parent: LogicalPlan = _;
 
-  protected val internalChildren = new util.ArrayList[LogicalPlan]
+   val internalChildren = new util.ArrayList[LogicalPlan]
 
   /**
    * This takes a rule and transform this to new plan
@@ -145,6 +145,16 @@ object UnresolvedProjection {
 /** From  clause */
 class UnresolvedFromClause(val tableName: String) extends LogicalPlan {
   override def describe(verbose: Boolean): String = "UnresolvedFromClause: table=" + tableName
+}
+
+object UnresolvedFromClause {
+  def unapply(ufc: UnresolvedFromClause): Option[(String, Boolean)] = {
+    if (ufc.internalChildren.isEmpty) {
+      Some(ufc.tableName, true)
+    } else {
+      Some(ufc.tableName, false)
+    }
+  }
 }
 
 /** This class is used to create a join which is not resolved select */

@@ -4,6 +4,7 @@ import io.github.harishb2k.spark.grammar.parser.SqlBaseLexer;
 import io.github.harishb2k.spark.grammar.parser.SqlBaseParser;
 import io.github.harishb2k.spark.sql.parser.node.LogicalPlan;
 import io.github.harishb2k.spark.sql.parser.node.SqlParseTreeListenerExt;
+import io.github.harishb2k.spark.sql.parser.node.UnresolvedFromClause;
 import io.github.harishb2k.spark.sql.parser.node.UnresolvedJoin;
 import io.github.harishb2k.spark.sql.parser.node.UnresolvedScan;
 import io.github.harishb2k.spark.sql.parser.node.UnresolvedSimpleJoin;
@@ -15,8 +16,11 @@ import org.junit.Test;
 
 public class SelectQueryOptimizerTest {
 
+    /**
+     * This test case removes a "from" clause and changes it to "Scan" - where we have no joins
+     */
     @Test
-    public void parseSelectQuery_UnresolvedJoinRule() {
+    public void parseSelectQuery_Simple_UnresolvedFromClause_Handling() {
         String statement = """ 
                  SELECT `id`, `name`, `created_at`
                  FROM `main_table`
@@ -38,10 +42,24 @@ public class SelectQueryOptimizerTest {
         LogicalPlanOptimizer optimizer = new LogicalPlanOptimizer();
         optimizer.rules().clear();
         optimizer.rules().add(new UnresolvedJoinRule());
+        optimizer.rules().add(new UnresolvedFromClauseWithSingleTable());
         root = optimizer.optimize(root);
         root.print(1);
+
+        // Test 1 - we must not have any UnresolvedFromClause
+        LogicalPlan result = root.travers(plan -> plan instanceof UnresolvedFromClause ? plan : null);
+        Assert.assertNull(result);
+
+        // Test 2 - we must have any UnresolvedScan of main table
+        LogicalPlan resultUnresolvedScan = root.travers(plan -> plan instanceof UnresolvedScan ? plan : null);
+        Assert.assertNotNull(resultUnresolvedScan);
+        Assert.assertTrue(resultUnresolvedScan instanceof UnresolvedScan);
+        Assert.assertEquals("main_table", ((UnresolvedScan) resultUnresolvedScan).tableName());
     }
 
+    /**
+     * This test case removes a "from" clause, and "join" -> convert it to "simple join with 2 scans"
+     */
     @Test
     public void parseSelectQueryWithJoin_UnresolvedJoinRule() {
         String statement = """
@@ -66,6 +84,7 @@ public class SelectQueryOptimizerTest {
         LogicalPlanOptimizer optimizer = new LogicalPlanOptimizer();
         optimizer.rules().clear();
         optimizer.rules().add(new UnresolvedJoinRule());
+        optimizer.rules().add(new UnresolvedFromClauseWithSingleTable());
         root = optimizer.optimize(root);
         root.print(1);
 
@@ -73,13 +92,19 @@ public class SelectQueryOptimizerTest {
         LogicalPlan result = root.travers(plan -> plan instanceof UnresolvedJoin ? plan : null);
         Assert.assertNull(result);
 
-        // Test - we must have UnresolvedSimpleJoin which is replaced by UnresolvedJoin
+        // Test 2 - we must have UnresolvedSimpleJoin which is replaced by UnresolvedJoin
         UnresolvedSimpleJoin resultUnresolvedSimpleJoin = (UnresolvedSimpleJoin) root.travers(plan -> plan instanceof UnresolvedSimpleJoin ? plan : null);
         Assert.assertNotNull(resultUnresolvedSimpleJoin);
-        Assert.assertEquals(true, resultUnresolvedSimpleJoin.left() instanceof UnresolvedScan);
-        Assert.assertEquals(true, resultUnresolvedSimpleJoin.right() instanceof UnresolvedScan);
+        Assert.assertNotNull(resultUnresolvedSimpleJoin.left());
+        Assert.assertNotNull(resultUnresolvedSimpleJoin.right());
+        Assert.assertTrue((resultUnresolvedSimpleJoin.left() instanceof UnresolvedScan));
+        Assert.assertTrue((resultUnresolvedSimpleJoin.right() instanceof UnresolvedScan));
         Assert.assertEquals("main_table", ((UnresolvedScan) resultUnresolvedSimpleJoin.left()).tableName());
         Assert.assertEquals("other_table", ((UnresolvedScan) resultUnresolvedSimpleJoin.right()).tableName());
+
+        // Test 3 - we must not have any UnresolvedFromClause
+        LogicalPlan resultUnresolvedFromClause = root.travers(plan -> plan instanceof UnresolvedFromClause ? plan : null);
+        Assert.assertNull(resultUnresolvedFromClause);
 
     }
 }

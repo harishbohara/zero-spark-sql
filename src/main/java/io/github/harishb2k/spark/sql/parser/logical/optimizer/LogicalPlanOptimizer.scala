@@ -8,6 +8,7 @@ import scala.collection.JavaConversions._
 class LogicalPlanOptimizer {
   val rules = new util.ArrayList[Rule]
   rules.add(new UnresolvedJoinRule)
+  rules.add(new UnresolvedFromClauseWithSingleTable)
 
   def optimize(logicalPlan: LogicalPlan): LogicalPlan = {
     var lp = logicalPlan;
