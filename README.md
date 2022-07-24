@@ -9,6 +9,10 @@ In this part, we will only parse the query. In next samples we will :
 2. create a execution plan
 3. execute a query
 
+#### How to run?
+
+Run ```SelectQueryParserTest``` test to try this out.
+
 #### Query Parsing
 
 This branch has a simple example to parse a query and create a Tree from the input query. Given below are toy queries

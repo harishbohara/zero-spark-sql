@@ -3,13 +3,13 @@ package io.github.harishb2k.spark.sql.parser.node
 import io.github.harishb2k.spark.grammar.parser.SqlBaseParser.{SingleStatementContext, TableNameContext}
 import io.github.harishb2k.spark.grammar.parser.{SqlBaseParser, SqlBaseParserBaseListener}
 
-
+/**
+ * This is the listener class which will be called when SQL is parsed. It is a visitor class.
+ */
 class SqlParseTreeListenerExt extends SqlBaseParserBaseListener {
-
   var parentNode: LogicalPlan = _
   private var internalRootNode: LogicalPlan = _
   private val parserCtx: Ctx = new Ctx()
-
 
   // Called when we find a statement
   override def enterSingleStatement(ctx: SingleStatementContext): Unit = {

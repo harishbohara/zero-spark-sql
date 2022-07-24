@@ -6,6 +6,9 @@ import org.apache.commons.lang3.StringUtils
 import java.util
 import scala.collection.JavaConversions._
 
+/**
+ * The parent node - I have named it <code>LogicalPlan</code> because this code is inspired from Spark code base.
+ */
 abstract class LogicalPlan {
 
   /**
@@ -88,6 +91,17 @@ case class UnresolvedJoin(primaryRelationName: String, secondaryRelationName: St
 }
 
 object UnresolvedJoin {
+
+  // If we have a join in a SQL then we will pick both the tables:
+  // Primary   - main_table
+  // Secondary - other_table
+  //
+  // Why - when we execute a query, we will read these 2 tables (may be from flat file) to join.
+  //
+  // SELECT `id`, `name`, `created_at`
+  //                 FROM `main_table` INNER JOIN `other_table`
+  //                    ON `main_table`.`column_name_main` = `other_table`.`column_name_other`
+  //                 WHERE `main_table`.`id` > 10;
   def apply(ctx: SqlBaseParser.JoinRelationContext): UnresolvedJoin = {
     val primaryRelationName = ctx.parent.asInstanceOf[SqlBaseParser.RelationContext].relationPrimary.getText
     val secondaryRelationName = ctx.right.parent.asInstanceOf[SqlBaseParser.JoinRelationContext].relationPrimary.getText
