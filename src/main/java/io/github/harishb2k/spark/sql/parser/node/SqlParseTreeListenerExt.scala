@@ -30,7 +30,7 @@ class SqlParseTreeListenerExt extends SqlBaseParserBaseListener {
   // Called when we get a from clause
   override def enterFromClause(ctx: SqlBaseParser.FromClauseContext): Unit = {
     val c = ctx.relation(0).relationPrimary().asInstanceOf[TableNameContext]
-    val t = new FromClause(c.getText)
+    val t = new UnresolvedFromClause(c.getText)
     commonAddChildren(t)
   }
 
