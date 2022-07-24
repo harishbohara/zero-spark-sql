@@ -11,7 +11,7 @@ public class SelectQueryParserTest {
 
     @Test
     public void parseSelectQuery() {
-        String statement = """
+        String statement = """ 
                  SELECT `id`, `name`, `created_at`
                  FROM `main_table`
                  WHERE `main_table`.`id` > 10;
