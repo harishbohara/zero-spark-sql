@@ -16,8 +16,34 @@ abstract class LogicalPlan {
    */
   var parent: LogicalPlan = _;
 
-
   protected val internalChildren = new util.ArrayList[LogicalPlan]
+
+  /**
+   * This takes a rule and transform this to new plan
+   */
+  def transform(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
+    val parent = this.parent
+
+    // Apply partial function on this plan
+    var afterRule = this
+    if (rule.isDefinedAt(this)) {
+      afterRule = rule.apply(this)
+    }
+
+    // See if new rule is changed then replace it
+    if (afterRule == this) {
+      if (!internalChildren.isEmpty) {
+        for (i <- 0 until internalChildren.size()) {
+          val lp = internalChildren.get(i)
+          lp.transform(rule)
+        }
+      }
+    } else {
+      replaceChildren(this, afterRule)
+    }
+
+    afterRule
+  }
 
   /**
    * Add a children to this node
@@ -25,6 +51,25 @@ abstract class LogicalPlan {
   def addChildren(logicalPlan: LogicalPlan): Unit = {
     internalChildren.add(logicalPlan)
     logicalPlan.parent = this
+  }
+
+  /**
+   * Remove a children
+   */
+  def removeChildren(logicalPlan: LogicalPlan): Unit = {
+    internalChildren.remove(logicalPlan)
+    logicalPlan.parent = this
+  }
+
+  /**
+   * Remove a children and replace it with new
+   */
+  def replaceChildren(oldChildren: LogicalPlan, newChildren: LogicalPlan): Unit = {
+    val parent = oldChildren.parent
+    if (parent != null) {
+      parent.removeChildren(oldChildren)
+      parent.addChildren(newChildren)
+    }
   }
 
   /** Describe this plan */
@@ -46,6 +91,23 @@ abstract class LogicalPlan {
       System.out.println(StringUtils.repeat(t, depth) + s)
       n.print(depth + 1)
     }
+  }
+
+  def travers(callback: ITTraversal): LogicalPlan = {
+    if (callback.callback(this) != null) {
+      return this
+    }
+
+    if (!internalChildren.isEmpty) {
+      for (n <- internalChildren) {
+        val lp = n.travers(callback)
+        if (lp != null) {
+          return lp
+        }
+      }
+    }
+
+    null
   }
 }
 
@@ -105,7 +167,29 @@ object UnresolvedJoin {
   def apply(ctx: SqlBaseParser.JoinRelationContext): UnresolvedJoin = {
     val primaryRelationName = ctx.parent.asInstanceOf[SqlBaseParser.RelationContext].relationPrimary.getText
     val secondaryRelationName = ctx.right.parent.asInstanceOf[SqlBaseParser.JoinRelationContext].relationPrimary.getText
-    new UnresolvedJoin(primaryRelationName, secondaryRelationName)
+    new UnresolvedJoin(primaryRelationName.replace("`",""), secondaryRelationName.replace("`",""))
+  }
+}
+
+case class UnresolvedScan(tableName: String) extends LogicalPlan {
+  override def describe(verbose: Boolean): String = "UnresolvedScan: " + "table=" + tableName
+}
+
+class UnresolvedSimpleJoin extends LogicalPlan {
+  var left: UnresolvedScan = _
+  var right: UnresolvedScan = _
+
+  override def describe(verbose: Boolean): String = "UnresolvedSimpleJoin"
+}
+
+object UnresolvedSimpleJoin {
+  def apply(left: UnresolvedScan, right: UnresolvedScan): UnresolvedSimpleJoin = {
+    val j = new UnresolvedSimpleJoin
+    j.left = left
+    j.right = right
+    j.addChildren(left)
+    j.addChildren(right)
+    j
   }
 }
 
