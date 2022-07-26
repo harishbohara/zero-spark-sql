@@ -86,6 +86,7 @@ class PredicatePushDownUnresolvedScan extends Rule {
 
 class UnresolvedProjectionRule extends Rule {
   var projection : UnresolvedProjection = null
+  var where: UnresolvedWhere = null
 
   /**
    * Apply a rule to logical plan
@@ -95,9 +96,17 @@ class UnresolvedProjectionRule extends Rule {
       projection = s
       null
 
+    case s@UnresolvedWhere(tableName, filedName, operator) =>
+      if (s.parent.isInstanceOf[UnresolvedSingleSelect]) {
+        projection.addChildren(s)
+        plan.removeChildren(s)
+      }
+      null
+
     case j@UnresolvedSimpleJoin(parent, _, _) =>
       projection.addChildren(j)
       plan.removeChildren(j)
       null
+
   }
 }
