@@ -85,8 +85,8 @@ class PredicatePushDownUnresolvedScan extends Rule {
 
 
 class UnresolvedProjectionRule extends Rule {
-  var projection : UnresolvedProjection = null
-  var where: UnresolvedWhere = null
+  var projection: UnresolvedProjection = _
+  var where: UnresolvedWhere = _
 
   /**
    * Apply a rule to logical plan
