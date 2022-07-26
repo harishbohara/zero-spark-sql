@@ -50,7 +50,7 @@ class PredicatePushDownUnresolvedScan extends Rule {
    * Apply a rule to logical plan
    */
   override def apply(plan: LogicalPlan): LogicalPlan = plan transform {
-    case u@UnresolvedScan(scanTableName) =>
+    case u@UnresolvedScan(scanTableName) if u.parent != null && !u.parent.isInstanceOf[UnresolvedWhere] =>
       var root: LogicalPlan = u
       var parent: LogicalPlan = u
       while (root != null) {
@@ -73,14 +73,11 @@ class PredicatePushDownUnresolvedScan extends Rule {
           }
         }
       }
+
       val where: LogicalPlan = parent.travers(callback)
 
       if (where != null) {
-        // us.parent.removeChildren(us)
-        // where.addChildren(us)
-        // where
-      } else {
-        // us
+        where.moveToBecomeParentOf(u)
       }
       u
   }

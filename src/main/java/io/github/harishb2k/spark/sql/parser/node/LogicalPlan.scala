@@ -61,6 +61,12 @@ abstract class LogicalPlan {
     logicalPlan.parent = this
   }
 
+  def detachFromParent(): Unit = {
+    if (parent != null) {
+      parent.removeChildren(this)
+    }
+  }
+
   /**
    * Remove a children and replace it with new
    */
@@ -70,6 +76,20 @@ abstract class LogicalPlan {
       parent.removeChildren(oldChildren)
       parent.addChildren(newChildren)
     }
+  }
+
+  def moveToBecomeParentOf(child: LogicalPlan): LogicalPlan = {
+    val childParent = child.parent
+    if (childParent == parent) {
+      childParent.removeChildren(child)
+      addChildren(child)
+    } else {
+      detachFromParent()
+      child.detachFromParent()
+      addChildren(child)
+      childParent.addChildren(this)
+    }
+    child
   }
 
   /** Describe this plan */

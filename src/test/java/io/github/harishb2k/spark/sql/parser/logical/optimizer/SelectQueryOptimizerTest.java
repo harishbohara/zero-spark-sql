@@ -8,6 +8,7 @@ import io.github.harishb2k.spark.sql.parser.node.UnresolvedFromClause;
 import io.github.harishb2k.spark.sql.parser.node.UnresolvedJoin;
 import io.github.harishb2k.spark.sql.parser.node.UnresolvedScan;
 import io.github.harishb2k.spark.sql.parser.node.UnresolvedSimpleJoin;
+import lombok.Data;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -159,6 +160,6 @@ public class SelectQueryOptimizerTest {
         // Test 3 - we must not have any UnresolvedFromClause
         LogicalPlan resultUnresolvedFromClause = root.travers(plan -> plan instanceof UnresolvedFromClause ? plan : null);
         Assert.assertNull(resultUnresolvedFromClause);
-
     }
 }
+
