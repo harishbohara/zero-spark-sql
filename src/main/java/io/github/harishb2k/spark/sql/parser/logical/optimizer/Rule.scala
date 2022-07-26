@@ -82,3 +82,22 @@ class PredicatePushDownUnresolvedScan extends Rule {
       u
   }
 }
+
+
+class UnresolvedProjectionRule extends Rule {
+  var projection : UnresolvedProjection = null
+
+  /**
+   * Apply a rule to logical plan
+   */
+  override def apply(plan: LogicalPlan): LogicalPlan = plan transform {
+    case s@UnresolvedProjection(_) =>
+      projection = s
+      null
+
+    case j@UnresolvedSimpleJoin(parent, _, _) =>
+      projection.addChildren(j)
+      plan.removeChildren(j)
+      null
+  }
+}

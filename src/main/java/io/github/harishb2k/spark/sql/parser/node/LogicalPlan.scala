@@ -22,7 +22,6 @@ abstract class LogicalPlan {
    * This takes a rule and transform this to new plan
    */
   def transform(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
-    val parent = this.parent
 
     // Apply partial function on this plan
     var afterRule = this
@@ -31,11 +30,18 @@ abstract class LogicalPlan {
     }
 
     // See if new rule is changed then replace it
-    if (afterRule == this) {
+    if (afterRule == null) {
+      afterRule = this
+    } else if (afterRule == this) {
       if (!internalChildren.isEmpty) {
         for (i <- 0 until internalChildren.size()) {
-          val lp = internalChildren.get(i)
-          lp.transform(rule)
+          try {
+            val lp = internalChildren.get(i)
+            lp.transform(rule)
+          } catch {
+            case e : IndexOutOfBoundsException =>
+              println(e)
+          }
         }
       }
     } else {
@@ -49,8 +55,8 @@ abstract class LogicalPlan {
    * Add a children to this node
    */
   def addChildren(logicalPlan: LogicalPlan): Unit = {
-    internalChildren.add(logicalPlan)
-    logicalPlan.parent = this
+      internalChildren.add(logicalPlan)
+      logicalPlan.parent = this
   }
 
   /**
@@ -220,6 +226,10 @@ object UnresolvedSimpleJoin {
     j.addChildren(left)
     j.addChildren(right)
     j
+  }
+
+  def unapply(ufc: UnresolvedSimpleJoin): Option[(LogicalPlan, UnresolvedScan, UnresolvedScan)] = {
+    Some(ufc.parent, ufc.left, ufc.right)
   }
 }
 
