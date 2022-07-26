@@ -9,6 +9,7 @@ class LogicalPlanOptimizer {
   val rules = new util.ArrayList[Rule]
   rules.add(new UnresolvedJoinRule)
   rules.add(new UnresolvedFromClauseWithSingleTable)
+  rules.add(new PredicatePushDownUnresolvedScan)
 
   def optimize(logicalPlan: LogicalPlan): LogicalPlan = {
     var lp = logicalPlan;
