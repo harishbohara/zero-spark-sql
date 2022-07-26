@@ -8,13 +8,14 @@ import io.github.harishb2k.spark.sql.parser.node.UnresolvedFromClause;
 import io.github.harishb2k.spark.sql.parser.node.UnresolvedJoin;
 import io.github.harishb2k.spark.sql.parser.node.UnresolvedScan;
 import io.github.harishb2k.spark.sql.parser.node.UnresolvedSimpleJoin;
-import lombok.Data;
+import io.github.harishb2k.spark.sql.parser.node.UnresolvedWhere;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.junit.Assert;
 import org.junit.Test;
 
+@SuppressWarnings({"ConstantConditions", "ObviousNullCheck"})
 public class SelectQueryOptimizerTest {
 
     /**
@@ -154,12 +155,18 @@ public class SelectQueryOptimizerTest {
         Assert.assertNotNull(resultUnresolvedSimpleJoin.right());
         Assert.assertTrue((resultUnresolvedSimpleJoin.left() instanceof UnresolvedScan));
         Assert.assertTrue((resultUnresolvedSimpleJoin.right() instanceof UnresolvedScan));
-        Assert.assertEquals("main_table", ((UnresolvedScan) resultUnresolvedSimpleJoin.left()).tableName());
-        Assert.assertEquals("other_table", ((UnresolvedScan) resultUnresolvedSimpleJoin.right()).tableName());
+        Assert.assertEquals("main_table", resultUnresolvedSimpleJoin.left().tableName());
+        Assert.assertEquals("other_table", resultUnresolvedSimpleJoin.right().tableName());
 
         // Test 3 - we must not have any UnresolvedFromClause
         LogicalPlan resultUnresolvedFromClause = root.travers(plan -> plan instanceof UnresolvedFromClause ? plan : null);
         Assert.assertNull(resultUnresolvedFromClause);
+
+        // Test 4 - make sure where has the scan under it
+        LogicalPlan whereIsParentOfScanNode = root.travers(plan -> plan instanceof UnresolvedWhere ? plan : null);
+        Assert.assertNotNull(whereIsParentOfScanNode);
+        Assert.assertNotNull(whereIsParentOfScanNode.internalChildren().get(0) instanceof UnresolvedScan);
+        Assert.assertEquals("main_table", ((UnresolvedScan) whereIsParentOfScanNode.internalChildren().get(0)).tableName());
     }
 }
 
