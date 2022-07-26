@@ -168,5 +168,54 @@ public class SelectQueryOptimizerTest {
         Assert.assertNotNull(whereIsParentOfScanNode.internalChildren().get(0) instanceof UnresolvedScan);
         Assert.assertEquals("main_table", ((UnresolvedScan) whereIsParentOfScanNode.internalChildren().get(0)).tableName());
     }
+
+    /**
+     * This test case removes a "from" clause, and "join" -> convert it to "simple join with 2 scans"
+     */
+    @Test
+    public void parseSelectQueryWithoutJoin_MergeJoinAndWhere() {
+        String statement = """
+              SELECT `id`, `name`, `created_at`
+                 FROM `main_table`
+                 WHERE `main_table`.`id` > 10;
+                """;
+
+        var lexer = new SqlBaseLexer(CharStreams.fromString(statement));
+        var tokens = new CommonTokenStream(lexer);
+        var parser = new SqlBaseParser(tokens);
+        ParseTreeWalker walker = new ParseTreeWalker();
+        var listener = new SqlParseTreeListenerExt();
+        walker.walk(listener, parser.singleStatement());
+
+        var root = listener.parentNode();
+        root.print(1);
+
+        // Test by running only UnresolvedJoinRule
+        System.out.println("\nAfter Optimize called \n");
+        LogicalPlanOptimizer optimizer = new LogicalPlanOptimizer();
+        optimizer.rules().clear();
+        optimizer.rules().add(new UnresolvedJoinRule());
+        optimizer.rules().add(new UnresolvedFromClauseWithSingleTable());
+        optimizer.rules().add(new PredicatePushDownUnresolvedScan());
+
+        root = optimizer.optimize(root);
+        root.print(1);
+
+        // Test 1 - we must not have any UnresolvedFromClause
+        LogicalPlan result = root.travers(plan -> plan instanceof UnresolvedFromClause ? plan : null);
+        Assert.assertNull(result);
+
+        // Test 2 - we must have any UnresolvedScan of main table
+        LogicalPlan resultUnresolvedScan = root.travers(plan -> plan instanceof UnresolvedScan ? plan : null);
+        Assert.assertNotNull(resultUnresolvedScan);
+        Assert.assertTrue(resultUnresolvedScan instanceof UnresolvedScan);
+        Assert.assertEquals("main_table", ((UnresolvedScan) resultUnresolvedScan).tableName());
+
+        // Test 4 - make sure where has the scan under it
+        LogicalPlan whereIsParentOfScanNode = root.travers(plan -> plan instanceof UnresolvedWhere ? plan : null);
+        Assert.assertNotNull(whereIsParentOfScanNode);
+        Assert.assertNotNull(whereIsParentOfScanNode.internalChildren().get(0) instanceof UnresolvedScan);
+        Assert.assertEquals("main_table", ((UnresolvedScan) whereIsParentOfScanNode.internalChildren().get(0)).tableName());
+    }
 }
 
