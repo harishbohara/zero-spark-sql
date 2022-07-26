@@ -50,10 +50,14 @@ class PredicatePushDownUnresolvedScan extends Rule {
    * Apply a rule to logical plan
    */
   override def apply(plan: LogicalPlan): LogicalPlan = plan transform {
-    case UnresolvedScan(scanTableName) =>
-      var parent: LogicalPlan = plan
-      while (parent != null) {
-        parent = plan.parent
+    case u@UnresolvedScan(scanTableName) =>
+      var root: LogicalPlan = u
+      var parent: LogicalPlan = u
+      while (root != null) {
+        root = root.parent
+        if (root != null) {
+          parent = root;
+        }
       }
       if (parent == null) {
         return plan
@@ -78,6 +82,6 @@ class PredicatePushDownUnresolvedScan extends Rule {
       } else {
         // us
       }
-      plan
+      u
   }
 }
